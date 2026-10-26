@@ -16,7 +16,7 @@ public class Escape {
      * deadEnds: how many cells of the maze have exactly one open neighbour.
      */
     public record Result(int[] path, int visited, int deadEnds) {}
-    
+
     public static Result escape(Input.Walls w, int[] broken) {
         int[][] g = Graphs.open(w, broken);
         int n = w.cells();
