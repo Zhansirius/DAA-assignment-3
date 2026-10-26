@@ -24,7 +24,14 @@ public class DisjointSetTest {
         check(d.count() == 3, "3 sets: {0,1,2,3} {4} {5}");
         check(d.find(4) == 4 && d.find(5) == 5, "a single cell is its own root");
 
-        // TODO: add your own checks here
+        DisjointSet d2 = new DisjointSet(100);
+        for (int i = 0; i < 99; i++) {
+            d2.union(i, i + 1);
+        }
+        check(d2.count() == 1, "1 set after chaining 100 elements");
+        check(d2.connected(0, 99), "First and last elements in chain are connected");
+        check(!d2.union(50, 50), "Union of a set with itself returns false");
+        check(d2.count() == 1, "Count remains the same after union with itself");
 
         System.out.println(failed == 0 ? "All checks passed." : failed + " checks failed.");
     }
