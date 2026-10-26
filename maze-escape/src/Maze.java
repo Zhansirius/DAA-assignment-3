@@ -31,8 +31,22 @@ public class Maze {
      * Returns the indexes of the broken walls.
      */
     public static int[] cheapestMaze(Input.Walls w) {
-        // TODO
-        return new int[0];
+        Integer[] indices = new Integer[w.count()];
+        for (int i = 0; i < w.count(); i++) {
+            indices[i] = i;
+        }
+        Arrays.sort(indices, Comparator.comparingInt(i -> w.cost()[i]));
+
+        DisjointSet dsu = new DisjointSet(w.cells());
+        int[] temp = new int[w.count()];
+        int idx = 0;
+
+        for (int i : indices) {
+            if (dsu.union(w.a()[i], w.b()[i])) {
+                temp[idx++] = i;
+            }
+        }
+        return Arrays.copyOf(temp, idx);
     }
 
     /**
@@ -40,7 +54,61 @@ public class Maze {
      * It must be equal to the total cost of cheapestMaze.
      */
     public static long primCost(Input.Walls w) {
-        // TODO
-        return 0;
+        int n = w.cells();
+        int[][] head = new int[n][];
+        int[][] edgeIdx = new int[n][];
+        int[] degree = new int[n];
+
+        for (int i = 0; i < w.count(); i++) {
+            degree[w.a()[i]]++;
+            degree[w.b()[i]]++;
+        }
+
+        for (int i = 0; i < n; i++) {
+            head[i] = new int[degree[i]];
+            edgeIdx[i] = new int[degree[i]];
+        }
+
+        int[] ptr = new int[n];
+        for (int i = 0; i < w.count(); i++) {
+            int a = w.a()[i];
+            int b = w.b()[i];
+            head[a][ptr[a]] = b;
+            edgeIdx[a][ptr[a]++] = i;
+            head[b][ptr[b]] = a;
+            edgeIdx[b][ptr[b]++] = i;
+        }
+
+        boolean[] inTree = new boolean[n];
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[1]));
+
+        long totalCost = 0;
+        inTree[0] = true;
+
+        for (int i = 0; i < ptr[0]; i++) {
+            pq.add(new int[]{head[0][i], w.cost()[edgeIdx[0][i]]});
+        }
+
+        int edgesUsed = 0;
+        while (!pq.isEmpty() && edgesUsed < n - 1) {
+            int[] current = pq.poll();
+            int v = current[0];
+            int cost = current[1];
+
+            if (!inTree[v]) {
+                inTree[v] = true;
+                totalCost += cost;
+                edgesUsed++;
+
+                for (int i = 0; i < ptr[v]; i++) {
+                    int next = head[v][i];
+                    if (!inTree[next]) {
+                        pq.add(new int[]{next, w.cost()[edgeIdx[v][i]]});
+                    }
+                }
+            }
+        }
+
+        return totalCost;
     }
 }
